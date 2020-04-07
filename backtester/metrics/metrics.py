@@ -27,13 +27,16 @@ def unscaled_mean_bounded_relative_absolute_error(y_true: pd.Series, y_pred: pd.
     -------
     Unscaled mean bounded relative absolute error as a float
     """
-    numerator = [abs(elem - y_pred[idx]) for idx, elem in enumerate(y_true)]
+    #numerator = [abs(elem - y_pred[idx]) for idx, elem in enumerate(y_true)]
+    numerator = np.abs(y_true.values - y_pred.values)
     series_one = y_true[1:]
     series_two = y_true[:-1]
-    denominator = [abs(elem - series_two[idx])
-                   for idx, elem in enumerate(series_one)]
-    final_series = [numerator[idx]/(numerator[idx] + denominator[idx])
-                    for idx in range(len(denominator))]
+    #denominator = [abs(elem - series_two[idx])
+    #               for idx, elem in enumerate(series_one)]
+    denominator = np.abs(series_one.values - series_two.values)
+    #final_series = [numerator[idx]/(numerator[idx] + denominator[idx])
+    #                for idx in range(len(denominator))]
+    final_series = numerator / (numerator + denominator)
     mbrae = np.mean(final_series)
     return mbrae/(1-mbrae)
 
@@ -56,12 +59,15 @@ def mean_bounded_relative_absolute_error(y_true: pd.Series, y_pred: pd.Series) -
     -------
     Mean bounded relative absolute error as a float.
     """
-    numerator = [abs(elem - y_pred[idx]) for idx, elem in enumerate(y_true)]
+    #numerator = [abs(elem - y_pred[idx]) for idx, elem in enumerate(y_true)]
+    numerator = np.abs(y_true.values - y_pred.values)
     series_one = y_true[1:]
     series_two = y_true[:-1]
-    denominator = [abs(elem - series_two[idx]) for idx, elem in enumerate(series_one)]
-    final_series = [numerator[idx]/(numerator[idx] + denominator[idx])
-                    for idx in range(len(denominator))]
+    #denominator = [abs(elem - series_two[idx]) for idx, elem in enumerate(series_one)]
+    denominator = np.abs(series_one.values - series_two.values)
+    #final_series = [numerator[idx]/(numerator[idx] + denominator[idx])
+    #                for idx in range(len(denominator))]
+    final_series = numerator / (numerator + denominator)
     return np.mean(final_series)
 
 def mean_absolute_percentage_error(y_true: pd.Series, y_pred: pd.Series) -> float: 
@@ -83,7 +89,7 @@ def mean_absolute_percentage_error(y_true: pd.Series, y_pred: pd.Series) -> floa
     -------
     Mean absolute percentage error as a float.
     """
-    percentage_error = (y_true - y_pred) / y_true)
+    percentage_error = (y_true.values - y_pred.values) / y_true.values
     absolute_percentage_error = np.abs(percentage_error)
     return np.mean(absolute_percentage_error) * 100
 
@@ -126,15 +132,18 @@ def mean_relative_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
     -------
     Mean Relative Absolute Error
     """
-    numerator = [abs(elem - y_pred[idx])
-                 for idx, elem in enumerate(y_true)]
+    #numerator = [abs(elem - y_pred[idx])
+    #             for idx, elem in enumerate(y_true)]
+    numerator = np.abs(y_true.values - y_pred.values)
     series_one = y_true[1:]
     series_two = y_true[:-1]
-    denominator = [abs(elem - series_two[idx])
-                   for idx, elem in enumerate(series_one)]    
-    return np.mean([
-        numerator[i]/denominator[i] for i in range(len(numerator))
-    ])
+    #denominator = [abs(elem - series_two[idx])
+    #               for idx, elem in enumerate(series_one)]
+    denominator = np.abs(series_one.values - series_two.values)
+    #return np.mean([
+    #    numerator[i]/denominator[i] for i in range(len(numerator))
+    #])
+    return np.mean(numerator / denominator)
 
 def median_relative_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
     """
@@ -154,15 +163,18 @@ def median_relative_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> floa
     -------
     Median Relative Absolute Error
     """
-    numerator = [abs(elem - y_pred[idx])
-                 for idx, elem in enumerate(y_true)]
+    #numerator = [abs(elem - y_pred[idx])
+    #             for idx, elem in enumerate(y_true)]
+    numerator = np.abs(y_true.values - y_pred.values)
     series_one = y_true[1:]
     series_two = y_true[:-1]
-    denominator = [abs(elem - series_two[idx])
-                   for idx, elem in enumerate(series_one)]    
-    return np.median([
-        numerator[i]/denominator[i] for i in range(len(numerator))
-    ])
+    #denominator = [abs(elem - series_two[idx])
+    #               for idx, elem in enumerate(series_one)]
+    denominator = np.abs(series_one.values - series_two.values)
+    #return np.median([
+    #    numerator[i]/denominator[i] for i in range(len(numerator))
+    #])
+    return np.median(numerator/denominator)
 
 def symmetric_mean_absolute_percentage_error(y_true: pd.Series, y_pred: pd.Series) -> float:
     """
@@ -182,11 +194,15 @@ def symmetric_mean_absolute_percentage_error(y_true: pd.Series, y_pred: pd.Serie
     -------
     Symmetric Mean Absolute Percentage Error
     """
-    numerator = [abs(y_pred[idx] - elem) for idx, elem in enumerate(y_true)]
-    denominator = [abs(elem) + abs(y_pred[idx]) for idx, elem in enumerate(y_true)]
-    denominator = [elem/2 for elem in denominator]
-    result = np.mean([numerator[i]/denominator[i] for i in range(len(numerator))])
-    return result * 100
+    #numerator = [abs(y_pred[idx] - elem) for idx, elem in enumerate(y_true)]
+    numerator = np.abs(y_pred.values - y_true.values)
+    #denominator = [abs(elem) + abs(y_pred[idx]) for idx, elem in enumerate(y_true)]
+    denominator = np.abs(y_true.values) + np.abs(y_pred.values)
+    #denominator = [elem/2 for elem in denominator]
+    denominator /= 2
+    #result = np.mean([numerator[i]/denominator[i] for i in range(len(numerator))])
+    #return result * 100
+    return np.mean(numerator / denominator) * 100
 
 def mean_absolute_scaled_error(y_true: pd.Series, y_pred: pd.Series) -> float:
     """
@@ -206,11 +222,15 @@ def mean_absolute_scaled_error(y_true: pd.Series, y_pred: pd.Series) -> float:
     -------
     Mean Absolute scaled Error
     """
-    numerator = sum([abs(y_pred[idx] - elem)  for idx, elem in enumerate(y_true)])
+    #numerator = sum([abs(y_pred[idx] - elem)  for idx, elem in enumerate(y_true)])
+    numerator = np.sum(np.abs(y_pred.values - y_true.values))
     series_one = y_true[1:]
     series_two = y_true[:-1]
-    denominator = sum([abs(elem - series_two[idx])
-                   for idx, elem in enumerate(series_one)])
+    #denominator = sum([abs(elem - series_two[idx])
+    #               for idx, elem in enumerate(series_one)])
+    denominator = np.sum(
+        np.abs(series_one.values - series_two.values)
+    )
     coeficient = len(y_true)/(len(y_true)-1)
     return numerator/(coeficient * denominator)
 
@@ -232,24 +252,59 @@ def geometric_mean_relative_absolute_error(y_true: pd.Series, y_pred: pd.Series)
     -------
     Geometric Mean Absolute Percentage Error
     """
-    numerator = [abs(y_pred[idx] - elem)  for idx, elem in enumerate(y_true)]
+    #numerator = [abs(y_pred[idx] - elem)  for idx, elem in enumerate(y_true)]
+    numerator = np.abs(y_pred.values - y_true.values)
     series_one = y_true[1:]
     series_two = y_true[:-1]
-    denominator = [abs(elem - series_two[idx])
-                   for idx, elem in enumerate(series_one)]
-    return mstats.gmean([numerator[i]/denominator[i] for i in range(len(numerator))])
+    #denominator = [abs(elem - series_two[idx])
+    #               for idx, elem in enumerate(series_one)]
+    denominator = np.abs(series_one.values - series_two.values)
+    #return mstats.gmean([numerator[i]/denominator[i] for i in range(len(numerator))])
+    return mstats.gmean(numerator / denominator)
+
+# statistic aliases
+umbrae = unscaled_mean_bounded_relative_absolute_error
+gmrae = geometric_mean_relative_absolute_error
+mase = mean_absolute_scaled_error
+smape = symmetric_mean_absolute_percentage_error
+median_rae = median_relative_absolute_error
+mean_rae = mean_relative_absolute_error
+rmse = root_mean_squared_error
+mape = mean_absolute_percentage_error
+mbrae = mean_bounded_relative_absolute_error
 
 def ad_fuller_test(timeseries):
+    """
+    Ad fuller documentation here:
+    https://www.statsmodels.org/stable/generated/statsmodels.tsa.stattools.adfuller.html#statsmodels.tsa.stattools.adfuller
+    
+    Tests the unit root in a univariate process in the presence of serial
+    correlation.
+    
+    Null hypothesis:
+    there is a unit root
+    
+    Alternative hypothesis:
+    there is no unit root, in otherwords the process is stationary.
+    
+    If the series has a unit root, then there is said to be no regression
+    to the mean, while stationary processes will regress to the mean.
+    """
     result = adfuller(timeseries)
     AdFullerResult = namedtuple('AdFullerResult', 'statistic pvalue')
     return AdFullerResult(result[0], result[1])
 
 def kpss(timeseries):
+    """
+    
+    """
     result = kpss(timeseries)
     KPSSResult = namedtuple('KPSSResult', 'statistic pvalue')
     return KPSSResult(result[0], result[1])
 
 def cointegration(y_true, y_pred):
+    """
+    """
     result = coint(y_true, y_pred)
     CointegrationResult = namedtuple('CointegrationResult', 'statistic pvalue')
     return CointegrationResult(result[0], result[1])
@@ -300,21 +355,34 @@ def q_stat(timeseries):
     return QstatResult(result[0], result[1])
 
 def acorr_ljungbox(timeseries):
+    """
+    """
     result = diagnostic.acorr_ljungbox(timeseries)
     AcorrLjungBoxResult = namedtuple('AcorrLjungBoxResult', 'statistic pvalue')
     return AcorrLjungBoxResult(result[0], result[1])
 
 def acorr_breusch_godfrey(timeseries):
+    """
+    """
     result = diagnostic.acorr_breusch_godfrey(timeseries)
     AcorrBreuschGodfreyResult = namedtuple('BreuschGodfreyResult', 'statistic pvalue')
     return AcorrBreuschGodfreyResult(result[0], result[1])
 
 def het_arch(timeseries):
+    """
+    """
     result = diagnostic.het_arch(timeseries)
     HetArchResult = namedtuple('HetArchResult', 'statistic pvalue')
     return HetArchResult(result[0], result[1])
 
 def breaks_cumsumolsresid(timeseries):
+    """
+    """
     result = diagnostic.breaks_cusumolsresid(timeseries)
     BreaksCumSumResult = namedtuple('BreaksCumSumResult', 'statistic pvalue')
     return BreaksCumSumResult(result[0], result[1])
+
+def chisquared_goodness_of_fit(y_true: pd.Series, y_pred: pd.Series, ddof=0, axis=0, lambda_=1):
+    y_true = y_true[y_true > 0]
+    y_pred = y_pred[y_true > 0]
+    return stats.power_divergence(y_true, y_pred)
