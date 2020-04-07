@@ -254,8 +254,14 @@ def cointegration(y_true, y_pred):
     CointegrationResult = namedtuple('CointegrationResult', 'statistic pvalue')
     return CointegrationResult(result[0], result[1])
 
-def bds(timeseries):
-    result = bds(timeseries)
+def bds(timeseries, max_dim=2, epsilon=None, distance=1.5):
+    """
+    BDS documentation:
+    https://www.statsmodels.org/stable/generated/statsmodels.tsa.stattools.bds.html#statsmodels.tsa.stattools.bds
+
+    
+    """
+    result = bds(timeseries, max_dim=max_dim, epsilon=epsilon, distance=distance)
     BdsResult = namedtuple('BdsResult', 'statistic pvalue')
     return BdsResult(result[0], result[1])
 
