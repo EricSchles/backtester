@@ -9,6 +9,17 @@ def describe(
         start_date: datetime.datetime,
         end_date: datetime.datetime):
     """
+    Describes the time series differences against 
+    the full set of metrics:
+    * unscaled mean bounded relative absolute error
+    * geometric mean relative absolute error
+    * mean absolute scaled error
+    * symmetric mean absolute percentage error
+    * median relative absolute error
+    * mean relative absolute error
+    * root mean squared error
+    * mean absolute percentage error
+    * mean bounded relative absolute error
     """
     true_series = true_series[start_date: end_date]
     predicted_series = predicted_series[start_date: end_date]
