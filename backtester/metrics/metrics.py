@@ -1,10 +1,10 @@
 import pandas as pd
-from statsmodels.tsa import stattools
+from statsmodels.tsa.api import (
+    adfuller, bds, coint, kpss, acf, q_stat
+)
 from statsmodels.stats import diagnostic
-from statsmodels.tsa import arima_model
 from collections import namedtuple
 from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import train_test_split
 import numpy as np
 from sklearn import metrics
 from scipy.stats import mstats
@@ -240,29 +240,56 @@ def geometric_mean_relative_absolute_error(y_true: pd.Series, y_pred: pd.Series)
     return mstats.gmean([numerator[i]/denominator[i] for i in range(len(numerator))])
 
 def ad_fuller_test(timeseries):
-
-    result = stattools.adfuller(timeseries)
+    result = adfuller(timeseries)
     AdFullerResult = namedtuple('AdFullerResult', 'statistic pvalue')
     return AdFullerResult(result[0], result[1])
 
 def kpss(timeseries):
-    result = stattools.kpss(timeseries)
+    result = kpss(timeseries)
     KPSSResult = namedtuple('KPSSResult', 'statistic pvalue')
     return KPSSResult(result[0], result[1])
 
 def cointegration(y_true, y_pred):
-    result = stattools.coint(y_true, y_pred)
+    result = coint(y_true, y_pred)
     CointegrationResult = namedtuple('CointegrationResult', 'statistic pvalue')
     return CointegrationResult(result[0], result[1])
 
 def bds(timeseries):
-    result = stattools.bds(timeseries)
+    result = bds(timeseries)
     BdsResult = namedtuple('BdsResult', 'statistic pvalue')
     return BdsResult(result[0], result[1])
 
 def q_stat(timeseries):
-    autocorrelation_coefs = stattools.acf(timeseries)
-    result = stattools.q_stat(autocorrelation_coefs)
+    """
+    autocorrelation function docs:
+    https://www.statsmodels.org/stable/generated/statsmodels.tsa.stattools.acf.html#statsmodels.tsa.stattools.acf
+
+    Ljung-Box Q statistic docs:
+    https://www.statsmodels.org/stable/generated/statsmodels.tsa.stattools.q_stat.html#statsmodels.tsa.stattools.q_stat
+
+    Tests whether any group of autocorrelations
+    of a time series are different from zero.
+    Specifically tests the overall randomness based
+    on a number of lags.
+    
+    Null Hypothesis:
+    The data are independently distributed
+    
+    Alternative Hypothesis:
+    The data is not independently distributed,
+    I.E. they exhibit serial correlation.
+    
+    Parameters
+    ----------
+    * timeseries : pd.Series
+      The observations of the time series
+
+    Returns
+    -------
+    Calculates the Ljung Box Q Statistics
+    """
+    autocorrelation_coefs = acf(timeseries)
+    result = q_stat(autocorrelation_coefs)
     QstatResult = namedtuple('QstatResult', 'statistic pvalue')
     return QstatResult(result[0], result[1])
 
