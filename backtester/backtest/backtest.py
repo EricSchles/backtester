@@ -1,6 +1,6 @@
 import pandas as pd
 import datetime
-from backtester.metrics import metrics
+from backtester.metrics import bt_metrics
 import code
 
 def describe(
@@ -30,38 +30,62 @@ def describe(
         """)
     print(
         "unscaled mean bounded relative absolute error:",
-        umbrae(true_series, predicted_series)
+        bt_metrics.umbrae(true_series, predicted_series)
     )
     print(
         "geometric_mean_relative_absolute_error:",
-        gmrae(true_series, predicted_series)
+        bt_metrics.gmrae(true_series, predicted_series)
     )
     print(
         "mean_absolute_scaled_error",
-        mase(true_series, predicted_series)
+        bt_metrics.mase(true_series, predicted_series)
     )
     print(
         "symmetric mean absolute percentage error:",
-        smape(true_series, predicted_series)
+        bt_metrics.smape(true_series, predicted_series)
     )
     print(
         "median relative absolute error:",
-        median_rae(true_series, predicted_series)
+        bt_metrics.median_rae(true_series, predicted_series)
     )
     print(
         "mean relative absolute error:",
-        mean_rae(true_series, predicted_series)
+        bt_metrics.mean_rae(true_series, predicted_series)
     )
     print(
         "root mean squared error:",
-        rmse(true_series, predicted_series)
+        bt_metrics.rmse(true_series, predicted_series)
     )
     print(
         "mean absolute percentage error",
-        mape(true_series, predicted_series)
+        bt_metrics.mape(true_series, predicted_series)
     )
     print(
         "mean bounded relative absolute error",  
-        mbrae(true_series, predicted_series)
+        bt_metrics.mbrae(true_series, predicted_series)
     )
 
+def analyze_series(timeseries):
+    print(
+        "Ad fuller test",
+        "Null Hypothesis: there is a unit root",
+        "Alt. Hypothesis: there is no unit root",
+        bt_metrics.ad_fuller_test(timeseries)
+    )
+    print(
+        "KPSS test",
+        "Null Hypothesis: level stationary",
+        "Alt. Hypothesis: not level stationary",
+        bt_metrics.kpss(timeseries)
+    )
+    print(
+        "KPSS test",
+        "Null Hypothesis: trend stationary",
+        "Alt. Hypothesis: not trend stationary",
+        bt_merics.kpss(
+            timeseries, regression="ct"
+        )
+    )
+
+        
+        

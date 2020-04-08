@@ -328,7 +328,14 @@ def kpss(timeseries: pd.Series, regression="c", nlags=None):
 
     Returns
     -------
-    Geometric Mean Absolute Percentage Error
+    kpss_stat : float
+        The KPSS test statistic.
+    p_value : float
+        The p-value of the test. The p-value is interpolated from
+        Table 1 in Kwiatkowski et al. (1992), and a boundary point
+        is returned if the test statistic is outside the table of
+        critical values, that is, if the p-value is outside the
+        interval (0.01, 0.1).
 
     """
     result = kpss(
