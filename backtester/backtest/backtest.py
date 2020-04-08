@@ -4,8 +4,8 @@ from backtester.metrics import bt_metrics
 import code
 
 def describe(
-        true_series: pd.Series,
-        predicted_series: pd.Series,
+        y_true: pd.Series,
+        y_pred: pd.Series,
         start_date: datetime.datetime,
         end_date: datetime.datetime):
     """
@@ -20,6 +20,18 @@ def describe(
     * root mean squared error
     * mean absolute percentage error
     * mean bounded relative absolute error
+    
+    Parameters
+    ----------
+    y_true : pd.Series
+        observed values
+    y_pred : pd.Series
+        forecasted values
+    start_date : datetime.datetime
+        the start date of the forecast to consider
+    end_date : datetime.datetime
+        the last date of the forecast to consider
+
     """
     true_series = true_series[start_date: end_date]
     predicted_series = predicted_series[start_date: end_date]
@@ -66,6 +78,22 @@ def describe(
     )
 
 def analyze_series(timeseries):
+    """
+    Analyzes the series for specific properties:
+    * Ad fuller - presence of unit root.
+    If no unit root, series regresses to the mean.
+    * KPSS - stationarity
+    If stationary regresses to the mean.
+    * BDS - time series is independent and iid.
+    If so, no serial correlation.
+    * Ljung-Box - explicit check for serial correlation.
+    If no serial correlation, regresses to the mean.
+    
+    Parameters
+    ----------
+    timeseries : pd.Series
+        observed values
+    """
     print(
         "Ad fuller test",
         "Null Hypothesis: there is a unit root",
@@ -86,6 +114,141 @@ def analyze_series(timeseries):
             timeseries, regression="ct"
         )
     )
+    print(
+        "BDS test - conservative",
+        "epsilon = 1.0",
+        "Null Hypothesis: time series is
+        independent and iid",
+        "Alt. Hypothesis: time series has
+        dependence structure over time",
+        bt_metrics.bds(
+            timeseries, epsilon=1.0
+        )
+    )
+    print(
+        "BDS test - liberal",
+        "epsilon = 2.0",
+        "Null Hypothesis: time series is
+        independent and iid",
+        "Alt. Hypothesis: time series has
+        dependence structure over time",
+        bt_metrics.bds(
+            timeseries, epsilon=2.0
+        )
+    )
+    print(
+        "Ljung-Box Q statistic",
+        "Null Hypothesis:",
+        "the data is independently distributed",
+        "Alt. Hypothesis",
+        "the data exhibits serial correlation",
+        bt_metrics.q_stat(timeseries)
+    )
 
-        
-        
+def analyze_residuals(observations: pd.Series, residuals: pd.Series):
+    """
+    Analyzes the stability of a forecast against observations.
+    Tests progress in degree of instability:
+    * Breusch-Godfrey - serial correlation test
+    * White - heteroscedasticity test
+    * Engle - conditional heteroscedasticity
+    * Cumulative Sum - structural break test
+    
+    Parameters
+    ----------
+    observations : pd.Series
+        observed values
+    residuals : pd.Series
+        observed values - forecasted values 
+    """
+    print(
+        "Breusch-Godfrey test",
+        "number of lags = 1",
+        "Null Hypothesis:",
+        "There is no serial correlation up to nlags",
+        "Alt. Hypothesis:",
+        "There is serial correlation",
+        bt_metrics.acorr_breusch_godfrey(
+            residuals, nlags=1
+        )
+    )
+    print(
+        "Breusch-Godfrey test",
+        "number of lags = 3",
+        "Null Hypothesis:",
+        "There is no serial correlation up to nlags",
+        "Alt. Hypothesis:",
+        "There is serial correlation",
+        bt_metrics.acorr_breusch_godfrey(
+            residuals, nlags=3
+        )
+    )
+    print(
+        "Breusch-Godfrey test",
+        "number of lags = 5",
+        "Null Hypothesis:",
+        "There is no serial correlation up to nlags",
+        "Alt. Hypothesis:",
+        "There is serial correlation",
+        bt_metrics.acorr_breusch_godfrey(
+            residuals, nlags=5
+        )
+    )
+    print(
+        "White's Heteroscedasticity test",
+        "Null Hypothesis:",
+        "No heteroscedasticity in the residuals",
+        "Alt. Hypothesis:",
+        "Heteroscedasticity exists",
+        bt_metrics.het_white(
+            observations, residuals
+        )
+    )
+    print(
+        "Engle's test for",
+        "Autoregression Conditional Heteroscedasticity",
+        "number of lags = 1",
+        "Null Hypothesis: ",
+        "No conditional heteroscedasticity",
+        "Alt. Hypothesis: ",
+        "Conditional heteroscedasticity exists",
+        bt_metrics.het_arch(
+            residuals, nlags=1
+        )
+    )
+    print(
+        "Engle's test for",
+        "Autoregression Conditional Heteroscedasticity",
+        "number of lags = 3",
+        "Null Hypothesis: ",
+        "No conditional heteroscedasticity",
+        "Alt. Hypothesis: ",
+        "Conditional heteroscedasticity exists",
+        bt_metrics.het_arch(
+            residuals, nlags=3
+        )
+    )
+    print(
+        "Engle's test for",
+        "Autoregression Conditional Heteroscedasticity",
+        "number of lags = 5",
+        "Null Hypothesis: ",
+        "No conditional heteroscedasticity",
+        "Alt. Hypothesis: ",
+        "Conditional heteroscedasticity exists",
+        bt_metrics.het_arch(
+            residuals, nlags=5
+        )
+    )
+    print(
+        "Breaks Cumulative summation test",
+        "for parameter stability",
+        "Null Hypothesis: ",
+        "No structural break",
+        "Alt. Hypothesis: ",
+        "A structural break has occurred",
+        bt_metrics.breaks_cumsum(
+            residuals
+        )
+    )
+

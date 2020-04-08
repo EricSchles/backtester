@@ -396,6 +396,114 @@ def cointegration(y_zero: pd.Series, y_one: pd.Series, trend='c', maxlag=None, a
     CointegrationResult = namedtuple('CointegrationResult', 'statistic pvalue')
     return CointegrationResult(result[0], result[1])
 
+def chisquared_goodness_of_fit(y_true: pd.Series, y_pred: pd.Series, ddof=0, axis=0, lambda_=1):
+    """
+    The chi-squared goodness of fit test.
+    
+    Documentation:
+    https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.power_divergence.html
+    
+    Parameters
+    ----------
+    y_true : pd.Series
+        Observed time series.
+    y_pred : pd.Series
+        Forecasted time series.
+    ddof : int, optional
+        "Delta degrees of freedom": adjustment to the degrees of freedom
+        for the p-value.  The p-value is computed using a chi-squared
+        distribution with ``k - 1 - ddof`` degrees of freedom, where `k`
+        is the number of observed frequencies.  The default value of `ddof`
+        is 0.
+    axis : int or None, optional
+        The axis of the broadcast result of `f_obs` and `f_exp` along which to
+        apply the test.  If axis is None, all values in `f_obs` are treated
+        as a single data set.  Default is 0.
+    lambda_ : float or str, optional
+        `lambda_` gives the power in the Cressie-Read power divergence
+        statistic.  The default is 1.  For convenience, `lambda_` may be
+        assigned one of the following strings, in which case the
+        corresponding numerical value is used::
+            String              Value   Description
+            "pearson"             1     Pearson's chi-squared statistic.
+                                        In this case, the function is
+                                        equivalent to `stats.chisquare`.
+            "log-likelihood"      0     Log-likelihood ratio. Also known as
+                                        the G-test.
+            "freeman-tukey"      -1/2   Freeman-Tukey statistic.
+            "mod-log-likelihood" -1     Modified log-likelihood ratio.
+            "neyman"             -2     Neyman's statistic.
+            "cressie-read"        2/3   The power.
+    Note: it is not recommended to change the lambda_ parameter unless
+    there is very good reason, because this changes the test that is run.
+    Please only change if you would like a different test.
+
+    Returns
+    -------
+    stat : float or ndarray
+        The Cressie-Read power divergence test statistic.  The value is
+        a float if `axis` is None or if` `f_obs` and `f_exp` are 1-D.
+    p : float or ndarray
+        The p-value of the test.  The value is a float if `ddof` and the
+        return value `stat` are scalars.
+    """
+    y_true = y_true[y_true > 0]
+    y_pred = y_pred[y_true > 0]
+    return stats.power_divergence(
+        y_true, y_pred, ddof=ddof,
+        axis=axis, lambda_=lambda_
+    )
+
+def het_white(y_true: pd.Series, resid: pd.Series):
+    """
+    White's Lagrange Multiplier Test for Heteroscedasticity.
+    
+    Null hypothesis:
+    No heteroscedasticity for y_pred with respect to y_true.
+    
+    Note: This does not imply no serial correlation.
+    
+    Alternative hypothesis:
+    heteroscedasticity exist for y_pred with respect to y_true.
+
+    References: 
+    * https://www.mathworks.com/help/econ/archtest.html
+    * https://www.mathworks.com/help/econ/engles-arch-test.html
+
+    Definition: Heteroscedasticity :=
+
+    Heteroscedasticity means that the variance of a time series
+    is not constant over time.  Therefore the variance over sliding
+    window t,... t+i will differ from sliding window t+i+1,..t+j,
+    where t is the initial time index, i, j are integers.
+    
+    Parameters
+    ----------
+    y_true : pd.Series
+        observed values
+    resid : pd.Series
+        y_pred - y_true values
+    nlags : int, default None
+        Highest lag to use.
+    ddof : int, default 0
+        If the residuals are from a regression, or ARMA estimation, then there
+        are recommendations to correct the degrees of freedom by the number
+        of parameters that have been estimated, for example ddof=p+q for an
+        ARMA(p,q).
+
+    Returns
+    -------
+    lm : float
+        Lagrange multiplier test statistic
+    lmpval : float
+        p-value for Lagrange multiplier test
+    """
+    result = diagnostic.het_white(
+        resid, y_true
+    )
+    HetWhiteResult = namedtuple('HetWhiteResult', 'statistic pvalue')
+    return HetWhiteResult(result[0], result[1])
+
 def bds(timeseries, max_dim=10, epsilon=1.5, distance=None):
     """
     BDS documentation:
@@ -483,7 +591,7 @@ def q_stat(timeseries):
 # benchmarks against other models
 # predict two weeks out - what did our predictions say two weeks out
 
-def acorr_breusch_godfrey(timeseries, nlags=None):
+def acorr_breusch_godfrey(resid, nlags=None):
     """
     Breusch-Godfrey Lagrange Multiplier tests for residual autocorrelation.
     documentation can be found here:
@@ -511,7 +619,7 @@ def acorr_breusch_godfrey(timeseries, nlags=None):
     
     Parameters
     ----------
-    timeseries : pd.Series
+    resid : pd.Series
         Estimation results for which the residuals are tested for serial
         correlation.
     nlags : int, default None
@@ -530,11 +638,11 @@ def acorr_breusch_godfrey(timeseries, nlags=None):
     lmpval : float
         The p-value for Lagrange multiplier test.
     """
-    result = diagnostic.acorr_breusch_godfrey(timeseries)
+    result = diagnostic.acorr_breusch_godfrey(resid)
     AcorrBreuschGodfreyResult = namedtuple('BreuschGodfreyResult', 'statistic pvalue')
     return AcorrBreuschGodfreyResult(result[0], result[1])
 
-def het_arch(timeseries: pd.Series, nlags=None, autolag=None, ddof=0):
+def het_arch(resid: pd.Series, nlags=None, ddof=0):
     """
     Engle’s Test for Autoregressive Conditional Heteroscedasticity (ARCH).
     
@@ -559,15 +667,10 @@ def het_arch(timeseries: pd.Series, nlags=None, autolag=None, ddof=0):
     
     Parameters
     ----------
-    timeseries : pd.Series
-        residuals from an estimation, or time series
+    resid : pd.Series
+        residuals from an estimation
     nlags : int, default None
-        Highest lag to use. The behavior of this parameter will change
-        after 0.12.
-    autolag : {str, None}, default None
-        If None, then a fixed number of lags given by maxlag is used. This
-        parameter is deprecated and will be removed after 0.12.  Searching
-        for model specification cannot control test size.
+        Highest lag to use.
     ddof : int, default 0
         If the residuals are from a regression, or ARMA estimation, then there
         are recommendations to correct the degrees of freedom by the number
@@ -582,13 +685,13 @@ def het_arch(timeseries: pd.Series, nlags=None, autolag=None, ddof=0):
         p-value for Lagrange multiplier test
     """
     result = diagnostic.het_arch(
-        timeseries, nlags=nlags,
+        resid, nlags=nlags,
         autolag=None, ddof=ddof
     )
     HetArchResult = namedtuple('HetArchResult', 'statistic pvalue')
     return HetArchResult(result[0], result[1])
 
-def breaks_cumsumolsresid(timeseries, ddof=0):
+def breaks_cumsum(resid: pd.Series, ddof=0):
     """
     Cumulative summation test for parameter stability
     based on ols residuals.
@@ -598,14 +701,16 @@ def breaks_cumsumolsresid(timeseries, ddof=0):
     
     see:
     * https://en.wikipedia.org/wiki/Structural_break
+    * https://www.stata.com/features/overview/cumulative-sum-test/
+    Null Hypothesis:
     
     This test looks for 'breaks' or huge changes in the parameter of interest
     over time, to see if there is structural instability in the series.
     
     Parameters
     ----------
-    timeseries : pd.Series
-        An array of residuals from an OLS estimation.
+    resid : pd.Series
+        An array of residuals.
     ddof : int
         The number of parameters in the OLS estimation, used as degrees
         of freedom correction for error variance.
@@ -620,64 +725,7 @@ def breaks_cumsumolsresid(timeseries, ddof=0):
         structural change, based on asymptotic distribution which is a Brownian
         Bridge
     """
-    result = diagnostic.breaks_cusumolsresid(timeseries, ddof=ddof)
+    result = diagnostic.breaks_cusumolsresid(resid, ddof=ddof)
     BreaksCumSumResult = namedtuple('BreaksCumSumResult', 'statistic pvalue')
     return BreaksCumSumResult(result[0], result[1])
 
-def chisquared_goodness_of_fit(y_true: pd.Series, y_pred: pd.Series, ddof=0, axis=0, lambda_=1):
-    """
-    The chi-squared goodness of fit test.
-    
-    Documentation:
-    https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.power_divergence.html
-    
-    Parameters
-    ----------
-    y_true : pd.Series
-        Observed time series.
-    y_pred : pd.Series
-        Forecasted time series.
-    ddof : int, optional
-        "Delta degrees of freedom": adjustment to the degrees of freedom
-        for the p-value.  The p-value is computed using a chi-squared
-        distribution with ``k - 1 - ddof`` degrees of freedom, where `k`
-        is the number of observed frequencies.  The default value of `ddof`
-        is 0.
-    axis : int or None, optional
-        The axis of the broadcast result of `f_obs` and `f_exp` along which to
-        apply the test.  If axis is None, all values in `f_obs` are treated
-        as a single data set.  Default is 0.
-    lambda_ : float or str, optional
-        `lambda_` gives the power in the Cressie-Read power divergence
-        statistic.  The default is 1.  For convenience, `lambda_` may be
-        assigned one of the following strings, in which case the
-        corresponding numerical value is used::
-            String              Value   Description
-            "pearson"             1     Pearson's chi-squared statistic.
-                                        In this case, the function is
-                                        equivalent to `stats.chisquare`.
-            "log-likelihood"      0     Log-likelihood ratio. Also known as
-                                        the G-test.
-            "freeman-tukey"      -1/2   Freeman-Tukey statistic.
-            "mod-log-likelihood" -1     Modified log-likelihood ratio.
-            "neyman"             -2     Neyman's statistic.
-            "cressie-read"        2/3   The power.
-    Note: it is not recommended to change the lambda_ parameter unless
-    there is very good reason, because this changes the test that is run.
-    Please only change if you would like a different test.
-
-    Returns
-    -------
-    stat : float or ndarray
-        The Cressie-Read power divergence test statistic.  The value is
-        a float if `axis` is None or if` `f_obs` and `f_exp` are 1-D.
-    p : float or ndarray
-        The p-value of the test.  The value is a float if `ddof` and the
-        return value `stat` are scalars.
-    """
-    y_true = y_true[y_true > 0]
-    y_pred = y_pred[y_true > 0]
-    return stats.power_divergence(
-        y_true, y_pred, ddof=ddof,
-        axis=axis, lambda_=lambda_
-    )
