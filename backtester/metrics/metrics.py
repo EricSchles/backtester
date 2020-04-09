@@ -8,6 +8,7 @@ from sklearn.metrics import mean_squared_error
 import numpy as np
 from sklearn import metrics
 from scipy.stats import mstats
+from scipy.stats import iqr
 from empiricaldist import Cdf as CDF
 from scipy import linalg
 
@@ -205,6 +206,133 @@ def symmetric_mean_absolute_percentage_error(y_true: pd.Series, y_pred: pd.Serie
     #result = np.mean([numerator[i]/denominator[i] for i in range(len(numerator))])
     #return result * 100
     return np.mean(numerator / denominator) * 100
+
+def absolute_error(y_true: pd.Series, y_pred: pd.Series) -> np.array:
+    """
+    formula comes from:
+    https://en.wikipedia.org/wiki/Mean_absolute_error
+    
+    Parameters
+    ----------
+    * y_true : pd.Series
+      The observations of the time series
+    * y_pred : pd.Series 
+      The values of the forecast of the time series
+
+    Note: all values are assumed to belong to the same time index
+
+    Returns
+    -------
+    Absolute error
+    """
+    return np.abs(y_true.values - y_pred.values)
+
+def mean_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
+    """
+    formula comes from:
+    https://en.wikipedia.org/wiki/Mean_absolute_error
+    
+    Parameters
+    ----------
+    * y_true : pd.Series
+      The observations of the time series
+    * y_pred : pd.Series 
+      The values of the forecast of the time series
+
+    Note: all values are assumed to belong to the same time index
+
+    Returns
+    -------
+    Mean absolute error
+    """
+    return np.mean(
+        absolute_error(y_true, y_pred)
+    )
+
+def mean_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
+    """
+    formula comes from:
+    https://en.wikipedia.org/wiki/Mean_absolute_error
+    
+    Parameters
+    ----------
+    * y_true : pd.Series
+      The observations of the time series
+    * y_pred : pd.Series 
+      The values of the forecast of the time series
+
+    Note: all values are assumed to belong to the same time index
+
+    Returns
+    -------
+    Mean absolute error
+    """
+    return np.mean(
+        absolute_error(y_true, y_pred)
+    )
+
+def median_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
+    """
+    formula comes from:
+    https://en.wikipedia.org/wiki/Median_absolute_deviation
+    
+    Parameters
+    ----------
+    * y_true : pd.Series
+      The observations of the time series
+    * y_pred : pd.Series 
+      The values of the forecast of the time series
+
+    Note: all values are assumed to belong to the same time index
+
+    Returns
+    -------
+    Median absolute error
+    """
+    return np.median(
+        absolute_error(y_true, y_pred)
+    )
+
+def variance_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
+    """
+    formula comes from:
+    https://en.wikipedia.org/wiki/Median_absolute_deviation
+    
+    Parameters
+    ----------
+    * y_true : pd.Series
+      The observations of the time series
+    * y_pred : pd.Series 
+      The values of the forecast of the time series
+
+    Note: all values are assumed to belong to the same time index
+
+    Returns
+    -------
+    Variance in absolute error
+    """
+    return np.var(
+        absolute_error(y_true, y_pred)
+    )
+
+def iqr_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
+    """    
+    Parameters
+    ----------
+    * y_true : pd.Series
+      The observations of the time series
+    * y_pred : pd.Series 
+      The values of the forecast of the time series
+
+    Note: all values are assumed to belong to the same time index
+
+    Returns
+    -------
+    Interquartile Range in absolute error
+    """
+    return iqr(
+        absolute_error(y_true, y_pred)
+    )
 
 def mean_absolute_scaled_error(y_true: pd.Series, y_pred: pd.Series) -> float:
     """
