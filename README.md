@@ -10,8 +10,11 @@ The goal of the project is to help backtest our forecasts to make sure they are 
 
 -- To Do --
 
+ToDos:
+* https://nbviewer.jupyter.org/github/AllenDowney/ProbablyOverthinkingIt/blob/master/sp500.ipynb
+
 Other libraries:
 
-http://pmorissette.github.io/bt/
-https://pypi.org/project/Backtesting/
-https://qtpylib.io/docs/latest/index.html
+* http://pmorissette.github.io/bt/
+* https://pypi.org/project/Backtesting/
+* https://qtpylib.io/docs/latest/index.html
