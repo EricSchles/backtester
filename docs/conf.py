@@ -24,7 +24,7 @@ author = 'Eric Schles'
 # The full version, including alpha/beta/rc tags
 release = '0.2'
 
-
+master_doc = 'index'
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
