@@ -8,9 +8,10 @@ Welcome to Backtester's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-
+   introduction
+   api_docs/backtester.metrics
+   api_docs/backtester.backtest
 
 Indices and tables
 ==================
