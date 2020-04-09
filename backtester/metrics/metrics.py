@@ -8,6 +8,8 @@ from sklearn.metrics import mean_squared_error
 import numpy as np
 from sklearn import metrics
 from scipy.stats import mstats
+from empiricaldist import Cdf as CDF
+from scipy import linalg
 
 def unscaled_mean_bounded_relative_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
     """
@@ -261,6 +263,66 @@ def geometric_mean_relative_absolute_error(y_true: pd.Series, y_pred: pd.Series)
     denominator = np.abs(series_one.values - series_two.values)
     #return mstats.gmean([numerator[i]/denominator[i] for i in range(len(numerator))])
     return mstats.gmean(numerator / denominator)
+
+def mahalanobis(x: float, distribution, covariance=None):
+    """
+    Compares a point to a distribution.  This allows you to compare
+    a forecast over a distribution against the observed value.
+    
+    For more info check out:
+    * https://github.com/EricSchles/datascience_book/blob/master/Applying%20Classification.ipynb
+    * https://en.wikipedia.org/wiki/Mahalanobis_distance
+    
+    Parameters
+    ----------
+    * x : float
+      The observation of the time series
+    * distribution : arraylike
+      The range of values for a forecast at a specific point.
+    * covariance : arraylike
+      The covariance matrix for the distribution
+    
+    Returns
+    -------
+    The mahalanobis distance between the point and distribution.
+    """
+    x_demeaned = x - np.mean(distribution)
+    if covariance is None:
+        covariance = np.cov(distribution.values.T)
+    inverse_covariance = linalg.inv(covariance)
+    left_term = np.dot(x_demeaned, inverse_covariance)
+    mahalanobis_distance = np.dot(left_term, x_demeaned.T)
+    return mahalanobis_distance.diagonal()
+
+def mahalanobis_sum(y_true: pd.Series, y_pred: pd.DataFrame):
+    """
+    Compares points to a distributions.  This allows you to compare
+    a forecast as distribution against the observed values.
+    
+    For more info check out:
+    * https://github.com/EricSchles/datascience_book/blob/master/Applying%20Classification.ipynb
+    * https://en.wikipedia.org/wiki/Mahalanobis_distance
+    
+    Parameters
+    ----------
+    * y_true : pd.Series
+      The observations of the time series
+    * distribution : pd.DataFrame
+      The range of values for a forecast.
+    
+    Returns
+    -------
+    The summed mahalanobis distance between the observation and forecasts.
+    """
+    summation = 0
+    for index in y_true.index:
+        summation += mahalanobis(y_true[index], y_pred[index])
+    return summation
+
+def get_cdfs(y_true: pd.Series, y_pred: pd.Series):
+    y_true_cdf = CDF.from_seq(y_true)
+    y_pred_cdf = CDF.from_seq(y_pred)
+    return y_true, y_pred
 
 # statistic aliases
 umbrae = unscaled_mean_bounded_relative_absolute_error
@@ -728,4 +790,3 @@ def breaks_cumsum(resid: pd.Series, ddof=0):
     result = diagnostic.breaks_cusumolsresid(resid, ddof=ddof)
     BreaksCumSumResult = namedtuple('BreaksCumSumResult', 'statistic pvalue')
     return BreaksCumSumResult(result[0], result[1])
-

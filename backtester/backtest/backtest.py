@@ -1,9 +1,67 @@
 import pandas as pd
 import datetime
 from backtester.metrics import bt_metrics
-import code
+from statsmodels.graphics.gofplots import qqplot
+from pandas.plotting import autocorrelation_plot
+import matplotlib.pyplot as plt
 
-def describe(
+def get_residuals(y_true: pd.Series, y_pred: pd.Series) -> pd.Series:
+    """
+    Generates the residuals from the forecast and observations.
+    
+    Parameters
+    ----------
+    y_true : pd.Series
+        observed values
+    y_pred : pd.Series
+        forecasted values
+    
+    Returns
+    ----------
+    Residuals, defined as y_true - y_pred
+    """
+    return y_true - y_pred
+
+def describe(timeseries: pd.Series):
+    """
+    Basic statistics for a timeseries
+    * Start date
+    * End date
+    * maximum value
+    * minimum value
+    * overall average value
+    * 30 day average
+    
+    Parameters
+    ----------
+    timeseries : pd.Series
+    """
+    print(
+        "Start date of series",
+        timeseries.index.min()
+    )
+    print(
+        "End date of series",
+        timeseries.index.max()
+    )
+    print(
+        "Overall minimum value",
+        timeseries.min()
+    )
+    print(
+        "Overall maximum value",
+        timeseries.max()
+    )
+    print(
+        "Overall average value",
+        timeseries.mean()
+    )
+    print(
+        "Average for last 30 days",
+        timeseries[-30:].mean()
+    )
+    
+def compare_forecast(
         y_true: pd.Series,
         y_pred: pd.Series,
         start_date: datetime.datetime,
@@ -77,7 +135,7 @@ def describe(
         bt_metrics.mbrae(true_series, predicted_series)
     )
 
-def analyze_series(timeseries):
+def analyze_series(timeseries: pd.Series):
     """
     Analyzes the series for specific properties:
     * Ad fuller - presence of unit root.
@@ -252,3 +310,46 @@ def analyze_residuals(observations: pd.Series, residuals: pd.Series):
         )
     )
 
+def plot_difference(y_true: pd.Series, y_pred: pd.Series):
+    """
+    Plots:
+    * original timeseries
+    * predicted timeseries
+    * the CDF
+    
+    Parameters
+    ----------
+    y_true : pd.Series
+        observed values
+    y_pred : pd.Series
+        forecasted values
+    """
+    y_true.plot()
+    y_pred.plot()
+    plt.show()
+    y_true_cdf, y_pred_cdf = bt_metrics.get_cdfs(y_true, y_pred)
+    y_true_cdf.plot(label="observations")
+    y_pred_cdf.plot(label-"predictions")
+    plt.show()
+
+def plot_residuals(residuals: pd.Series):
+    """
+    Plots:
+    * histogram of residuals
+    * density of residuals
+    * QQ plot of residuals
+    * autocorrelation plot of residuals
+    
+    Parameters
+    ----------
+    residuals : pd.Series
+        observed values - forecasted values
+    """
+    residuals.hist()
+    plt.show()
+    residuals.plot(kind="kde")
+    plt.show()
+    qqplot(residuals)
+    plt.show()
+    autocorrelation_plot(residuals)
+    plt.show()
