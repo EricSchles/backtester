@@ -10,7 +10,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="backtester",
-    version="0.1",
+    version="0.3",
     description="A backtesting for timeseries data in a pandas dataframe",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -26,6 +26,6 @@ setup(
     ],
     packages=["backtester", 'backtester.metrics', 'backtester.backtest'],
     include_package_data=True,
-    install_requires=["sklearn", "scipy", "numpy",
+    install_requires=["sklearn", "scipy", "numpy", "empiricaldist",
                       "statsmodels", "mlxtend", "pytest"],
 )
