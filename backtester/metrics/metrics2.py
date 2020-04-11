@@ -449,7 +449,7 @@ def root_median_squared_percentage_error(y_true: np.ndarray, y_pred: np.ndarray)
         square_percentage_error
     ))
 
-def rmsse(y_true: np.ndarray, y_pred: np.ndarray, seasonality: int = 1):
+def root_mean_squared_scaled_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Root Mean Squared Scaled Error """
     benchmark = seasonal_decompose(y_true).seasonal.max()
     benchmark = math.floor(benchmark)
@@ -458,28 +458,59 @@ def rmsse(y_true: np.ndarray, y_pred: np.ndarray, seasonality: int = 1):
     else:
         seasonality = benchmark
 
-    q = np.abs(_error(actual, predicted)) / mae(actual[seasonality:], _naive_forecasting(actual, seasonality))
-    return np.sqrt(np.mean(np.square(q)))
+    error = y_true - y_pred
+    naive_forecast_error = y_true[seasonality:] - y_true[:-seasonality]
+    mae = mean_absolute_error(actual[seasonality:], naive_forecast_error) 
+    absolute_error_scaled = np.abs(error / mae)
+    squared_absolute_error_scaled = np.square(absolute_error_mae_normalized)
+    return np.sqrt(np.mean(
+        squared_absolute_error_scaled
+    ))
 
 
-def inrse(actual: np.ndarray, predicted: np.ndarray):
+def integral_normalized_root_squared_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Integral Normalized Root Squared Error """
-    return np.sqrt(np.sum(np.square(_error(actual, predicted))) / np.sum(np.square(actual - np.mean(actual))))
+    error = y_true - y_pred
+    squared_error = np.square(error)
+    normed_error = np.sqrt(np.sum(
+        squared_error
+    ))
+    average_deviation = y_true - np.mean(y_true)
+    squared_average_deviation = np.square(average_deviation)
+    summed_squared_average_deviation = np.sum(
+        squared_average_deviation
+    )
+    return normed_error / summed_suqared_average_deviation 
 
 
-def rrse(actual: np.ndarray, predicted: np.ndarray):
+def rrse(y_true: np.ndarray, y_pred: np.ndarray):
     """ Root Relative Squared Error """
-    return np.sqrt(np.sum(np.square(actual - predicted)) / np.sum(np.square(actual - np.mean(actual))))
+    error = y_true - y_pred
+    squared_error = np.square(error)
+    summed_squared_error = np.sum(squared_error)
+    average_deviation = y_true - np.mean(y_true)
+    squared_average_deviation = np.square(average_deviation)
+    summed_squared_average_deviation = np.sum(
+        squared_average_deviation
+    )
+    return np.sqrt(summed_squared_error / summed_squared_average_deviation)
 
 
-def mre(actual: np.ndarray, predicted: np.ndarray, benchmark: np.ndarray = None):
+def mre(y_true: np.ndarray, y_pred: np.ndarray):
     """ Mean Relative Error """
-    return np.mean(_relative_error(actual, predicted, benchmark))
+    return np.mean(_relative_error(y_true, y_pred))
 
 
-def rae(actual: np.ndarray, predicted: np.ndarray):
+def rae(y_true: np.ndarray, y_pred: np.ndarray):
     """ Relative Absolute Error (aka Approximation Error) """
-    return np.sum(np.abs(actual - predicted)) / (np.sum(np.abs(actual - np.mean(actual))) + EPSILON)
+    absolute_error = np.abs(y_true - y_pred)
+    summed_absolute_error = np.sum(absolute_error)
+    average_deviation = y_true - np.mean(y_true)
+    absolute_deviation = np.abs(average_deviation)
+    summed_absolute_deviation = np.sum(
+        absolute_deviation
+    )
+    return summed_absolute_error / summed_absolute_deviation
 
 
 def mrae(actual: np.ndarray, predicted: np.ndarray, benchmark: np.ndarray = None):
@@ -533,3 +564,4 @@ def umbrae(actual: np.ndarray, predicted: np.ndarray, benchmark: np.ndarray = No
 def mda(actual: np.ndarray, predicted: np.ndarray):
     """ Mean Directional Accuracy """
     return np.mean((np.sign(actual[1:] - actual[:-1]) == np.sign(predicted[1:] - predicted[:-1])).astype(int))
+
