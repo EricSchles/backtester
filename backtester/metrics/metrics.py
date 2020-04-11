@@ -15,9 +15,16 @@ from scipy.stats import iqr
 from empiricaldist import Cdf as CDF
 from scipy import linalg
 
-def _relative_error(y_true: np.ndarray, y_pred: np.ndarray):
+def flatten_values(series: pd.Series):
+    if isinstance(series, pd.Series) or isinstance(series, pd.DataFrame):
+        return series.values.ravel()
+    return series
+
+def _relative_error(y_true: pd.Series, y_pred: pd.Series):
     """ Relative Error """
     benchmark = seasonal_decompose(y_true).seasonal.max()
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     if benchmark is None or benchmark.is_integer():
         if benchmark == 0:
             seasonality = 1
@@ -28,9 +35,11 @@ def _relative_error(y_true: np.ndarray, y_pred: np.ndarray):
         return error / naive_forecast_error
     return (y_true - y_pred) / y_true
 
-def _bounded_relative_error(y_true: np.ndarray, y_pred: np.ndarray):
+def _bounded_relative_error(y_true: pd.Series, y_pred: pd.Series):
     """ Bounded Relative Error """
     benchmark = seasonal_decompose(y_true).seasonal.max()
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     if benchmark is None or benchmark.is_integer():
         # If no benchmark prediction provided - use naive forecasting
         if benchmark == 0:
@@ -38,14 +47,14 @@ def _bounded_relative_error(y_true: np.ndarray, y_pred: np.ndarray):
         else:
             seasonality = benchmark
         error = y_true[seasonality:] - y_pred[seasonality:]
-        abs_err = np.abs(error)
+        abs_error = np.abs(error)
         naive_forecast_error = y_true[seasonality:] - y_true[:-seasonality]
         abs_error_bench = np.abs(naive_forecast_error)
     else:
         error = y_true[seasonality:] - y_pred[seasonality:]
-        abs_err = np.abs(error)
-        abs_err_bench = np.abs(y_true - benchmark)
-    return abs_err / (abs_err + abs_err_bench)
+        abs_error = np.abs(error)
+        abs_error_bench = np.abs(y_true - benchmark)
+    return abs_error / (abs_error + abs_error_bench)
 
 def root_mean_squared_error(y_true: np.ndarray, y_pred: np.ndarray):
     """
@@ -64,6 +73,8 @@ def root_mean_squared_error(y_true: np.ndarray, y_pred: np.ndarray):
     -------
     Root Mean Squared Error
     """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     return np.sqrt(
         metrics.mean_squared_error(y_true, y_pred)
     )
@@ -85,6 +96,8 @@ def normalized_root_mean_squared_error(y_true: np.ndarray, y_pred: np.ndarray):
     -------
     Normalized Root Mean Squared Error
     """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     _rmse = root_mean_squared_error(y_true, y_pred)
     normalizing_factor = np.abs(y_true.max() - y_pred.min())
     return _rmse / normalizing_factor
@@ -106,6 +119,8 @@ def mean_error(y_true: np.ndarray, y_pred: np.ndarray):
     -------
     Mean Error
     """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     return np.mean(y_true - y_pred)
 
 def absolute_error(y_true: pd.Series, y_pred: pd.Series) -> np.array:
@@ -126,7 +141,9 @@ def absolute_error(y_true: pd.Series, y_pred: pd.Series) -> np.array:
     -------
     Absolute error
     """
-    return np.abs(y_true.values - y_pred.values)
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
+    return np.abs(y_true - y_pred)
 
 def mean_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
     """
@@ -276,7 +293,8 @@ def mean_percentage_error(y_true: np.ndarray, y_pred: np.ndarray):
     -------
     Mean percentage error as a float.
     """
-
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     return np.mean(
         (y_true - y_pred) / y_true
     )
@@ -300,7 +318,9 @@ def mean_absolute_percentage_error(y_true: pd.Series, y_pred: pd.Series) -> floa
     -------
     Mean absolute percentage error as a float.
     """
-    percentage_error = (y_true.values - y_pred.values) / y_true.values
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
+    percentage_error = (y_true - y_pred) / y_true
     absolute_percentage_error = np.abs(percentage_error)
     return np.mean(absolute_percentage_error) * 100
 
@@ -323,7 +343,8 @@ def median_absolute_percentage_error(y_true: np.ndarray, y_pred: np.ndarray):
     -------
     Mean absolute percentage error as a float.
     """
-
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     return np.median(np.abs(
         (y_true - y_pred) / y_true
     ))
@@ -346,8 +367,10 @@ def symmetric_mean_absolute_percentage_error(y_true: np.ndarray, y_pred: np.ndar
     -------
     Symmetric Mean Absolute Percentage Error
     """
-    numerator = np.abs(y_pred.values - y_true.values)
-    denominator = np.abs(y_true.values) + np.abs(y_pred.values)
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
+    numerator = np.abs(y_pred - y_true)
+    denominator = np.abs(y_true) + np.abs(y_pred)
     denominator /= 2
     return np.mean(numerator / denominator) * 100
 
@@ -369,8 +392,10 @@ def symmetric_median_absolute_percentage_error(y_true: np.ndarray, y_pred: np.nd
     -------
     Symmetric Mean Absolute Percentage Error
     """
-    numerator = np.abs(y_pred.values - y_true.values)
-    denominator = np.abs(y_true.values) + np.abs(y_pred.values)
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
+    numerator = np.abs(y_pred - y_true)
+    denominator = np.abs(y_true) + np.abs(y_pred)
     denominator /= 2
     return np.median(numerator / denominator) * 100
 
@@ -380,7 +405,9 @@ def mean_arctangent_absolute_percentage_error(y_true: np.ndarray, y_pred: np.nda
 
     Note: result is NOT multiplied by 100
     """
-    relative_error = (y_true - y_pred) / y_true)
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
+    relative_error = (y_true - y_pred) / y_true
     abs_relative_error = np.abs(relative_error)
     return np.mean(np.arctan(
         abs_relative_error
@@ -399,6 +426,8 @@ def mean_absolute_scaled_error(y_true: np.ndarray, y_pred: np.ndarray):
         seasonality = 1
     else:
         seasonality = benchmark
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     error = y_true[seasonality:] - y_pred[seasonality:]
     naive_forecast_error = y_true[seasonality:] - y_true[:-seasonality]  
     naive_mae = mean_absolute_error(y_true[seasonality:], naive_forecast_error)
@@ -407,6 +436,8 @@ def mean_absolute_scaled_error(y_true: np.ndarray, y_pred: np.ndarray):
 
 def normalized_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Normalized Absolute Error """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     mae = mean_absolute_error(y_true, y_pred)
     error = y_true - y_pred
     square_difference = np.square(error - mae)
@@ -416,6 +447,8 @@ def normalized_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
 
 def normalized_absolute_percentage_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Normalized Absolute Percentage Error """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     _mape = mean_absolute_percentage_error(y_true, y_pred)
     percentage_error = (y_true - y_pred) / y_true
     square_difference = np.square(percentage_error - _mape)
@@ -429,6 +462,8 @@ def root_mean_squared_percentage_error(y_true: np.ndarray, y_pred: np.ndarray):
 
     Note: result is NOT multiplied by 100
     """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     percentage_error = (y_true - y_pred) / y_true
     square_percentage_error = np.square(percentage_error)
     return np.sqrt(np.mean(
@@ -441,6 +476,8 @@ def root_median_squared_percentage_error(y_true: np.ndarray, y_pred: np.ndarray)
 
     Note: result is NOT multiplied by 100
     """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     percentage_error = (y_true - y_pred) / y_true
     square_percentage_error = np.square(percentage_error)
     return np.sqrt(np.median(
@@ -451,6 +488,8 @@ def root_mean_squared_scaled_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Root Mean Squared Scaled Error """
     benchmark = seasonal_decompose(y_true).seasonal.max()
     benchmark = math.floor(benchmark)
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     if benchmark == 0:
         seasonality = 1
     else:
@@ -467,6 +506,8 @@ def root_mean_squared_scaled_error(y_true: np.ndarray, y_pred: np.ndarray):
 
 def integral_normalized_root_squared_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Integral Normalized Root Squared Error """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     error = y_true - y_pred
     squared_error = np.square(error)
     normed_error = np.sqrt(np.sum(
@@ -481,6 +522,8 @@ def integral_normalized_root_squared_error(y_true: np.ndarray, y_pred: np.ndarra
 
 def root_relative_squared_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Root Relative Squared Error """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     error = y_true - y_pred
     squared_error = np.square(error)
     summed_squared_error = np.sum(squared_error)
@@ -497,6 +540,8 @@ def mean_relative_error(y_true: np.ndarray, y_pred: np.ndarray):
 
 def relative_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Relative Absolute Error (aka Approximation Error) """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     absolute_error = np.abs(y_true - y_pred)
     summed_absolute_error = np.sum(absolute_error)
     average_deviation = y_true - np.mean(y_true)
@@ -508,6 +553,8 @@ def relative_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
 
 def mean_relative_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Mean Relative Absolute Error """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     absolute_relative_error = np.abs(
         _relative_error(y_true, y_pred)
     )
@@ -515,6 +562,8 @@ def mean_relative_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
 
 def median_relative_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Median Relative Absolute Error """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     absolute_relative_error = np.abs(_relative_error(y_true, y_pred))
     return np.median(absolute_relative_error)
 
@@ -536,23 +585,32 @@ def geometric_mean_relative_absolute_error(y_true: pd.Series, y_pred: pd.Series)
     -------
     Geometric Mean Absolute Percentage Error
     """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
+
     return mstats.gmean(np.abs(
         _relative_error(y_true, y_pred)
     ))
     
 def mean_bounded_relative_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Mean Bounded Relative Absolute Error """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     return np.mean(
         _bounded_relative_error(y_true, y_pred)
     )
 
 def unscaled_mean_bounded_relative_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Unscaled Mean Bounded Relative Absolute Error """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     _mbrae = mean_bounded_relative_absolute_error(y_true, y_pred)
     return _mbrae / (1 - _mbrae)
 
 def mean_directional_accuracy(y_true: np.ndarray, y_pred: np.ndarray):
     """ Mean Directional Accuracy """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     observations_increasing = np.sign(y_true[1:] - y_true[:-1])
     predictions_increasing = np.sign(y_pred[1:] - y_pred[:-1])
     directional_increase_count = (observations_increasing == predictions_increasing).astype(int)
@@ -614,6 +672,8 @@ def mahalanobis_sum(y_true: pd.Series, y_pred: pd.DataFrame):
     return summation
 
 def get_cdfs(y_true: pd.Series, y_pred: pd.Series):
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     y_true_cdf = CDF.from_seq(y_true)
     y_pred_cdf = CDF.from_seq(y_pred)
     return y_true, y_pred
