@@ -163,28 +163,8 @@ def mean_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
     -------
     Mean absolute error
     """
-    return np.mean(
-        absolute_error(y_true, y_pred)
-    )
-
-def mean_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
-    """
-    formula comes from:
-    https://en.wikipedia.org/wiki/Mean_absolute_error
-    
-    Parameters
-    ----------
-    * y_true : pd.Series
-      The observations of the time series
-    * y_pred : pd.Series 
-      The values of the forecast of the time series
-
-    Note: all values are assumed to belong to the same time index
-
-    Returns
-    -------
-    Mean absolute error
-    """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     return np.mean(
         absolute_error(y_true, y_pred)
     )
@@ -207,6 +187,8 @@ def median_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
     -------
     Median absolute error
     """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     return np.median(
         absolute_error(y_true, y_pred)
     )
@@ -229,6 +211,8 @@ def variance_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
     -------
     Variance in absolute error
     """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     return np.var(
         absolute_error(y_true, y_pred)
     )
@@ -248,6 +232,8 @@ def iqr_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
     -------
     Interquartile Range in absolute error
     """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     return iqr(
         absolute_error(y_true, y_pred)
     )
@@ -270,6 +256,8 @@ def geometric_mean_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
     -------
     Geometric Mean Absolute Percentage Error
     """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
     return mstats.gmean(
         absolute_error(y_true, y_pred)
     )
@@ -494,11 +482,11 @@ def root_mean_squared_scaled_error(y_true: np.ndarray, y_pred: np.ndarray):
         seasonality = 1
     else:
         seasonality = benchmark
-
+    
     error = y_true - y_pred
     naive_forecast_error = y_true[seasonality:] - y_true[:-seasonality]
     _mae = mean_absolute_error(y_true[seasonality:], naive_forecast_error) 
-    absolute_error_scaled = np.abs(error / mae)
+    absolute_error_scaled = np.abs(error / _mae)
     squared_absolute_error_scaled = np.square(absolute_error_mae_normalized)
     return np.sqrt(np.mean(
         squared_absolute_error_scaled

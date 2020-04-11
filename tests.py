@@ -39,3 +39,68 @@ def test__bounded_relative_error():
 def test_root_mean_squared_error():
     assert example_code(bt_metrics.root_mean_squared_error)
     
+def test_normalized_root_mean_squared_error():
+    assert example_code(bt_metrics.normalized_root_mean_squared_error)
+
+def test_mean_error():
+    assert example_code(bt_metrics.mean_error)
+
+def test_absolute_error():
+    assert example_code(bt_metrics.absolute_error)
+
+def test_mean_absolute_error():
+    assert example_code(bt_metrics.mean_absolute_error)
+
+def test_median_absolute_error():
+    assert example_code(bt_metrics.median_absolute_error)
+
+def test_variance_absolute_error():
+    assert example_code(bt_metrics.variance_absolute_error)
+
+def test_iqr_absolute_error():
+    assert example_code(bt_metrics.iqr_absolute_error)
+
+def test_geometric_mean_absolute_error():
+    assert example_code(bt_metrics.geometric_mean_absolute_error)
+
+def test_mean_percentage_error():
+    assert example_code(bt_metrics.mean_percentage_error)
+
+def test_mean_absolute_percentage_error():
+    assert example_code(bt_metrics.mean_absolute_percentage_error)
+
+def test_median_absolute_percentage_error():
+    assert example_code(bt_metrics.median_absolute_percentage_error)
+
+def test_symmetric_mean_absolute_percentage_error():
+    assert example_code(bt_metrics.symmetric_mean_absolute_percentage_error)
+
+def test_symmetric_median_absolute_percentage_error():
+    assert example_code(bt_metrics.symmetric_median_absolute_percentage_error)
+
+def test_arctangent_absolute_percentage_error():
+    assert example_code(bt_metrics.mean_arctangent_absolute_percentage_error)
+
+def test_mean_absolute_scaled_error():
+    assert example_code(bt_metrics.mean_absolute_scaled_error)
+
+def test_normalized_absolute_error():
+    assert example_code(bt_metrics.normalized_absolute_error)
+
+def test_normalized_absolute_percentage_error():
+    assert example_code(bt_metrics.normalized_absolute_percentage_error)
+
+def test_root_mean_squared_percentage_error():
+    assert example_code(bt_metrics.root_mean_squared_percentage_error)
+
+def test_root_median_squared_percentage_error():
+    assert example_code(bt_metrics.root_median_squared_percentage_error)
+
+def test_root_mean_squared_scaled_error():
+    assert example_code(bt_metrics.root_mean_squared_scaled_error)
+
+def test_integral_normalized_root_squared_error():
+    assert example_code(bt_metrics.integral_normalized_root_squared_error)
+
+#if __name__ == '__main__':
+#    example_code(bt_metrics.root_mean_squared_scaled_error)
