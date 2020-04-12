@@ -101,3 +101,32 @@ def test_root_mean_squared_scaled_error():
 
 def test_integral_normalized_root_squared_error():
     assert example_code(bt_metrics.integral_normalized_root_squared_error)
+
+def test_root_relative_squared_error():
+    assert example_code(bt_metrics.root_relative_squared_error)
+
+def test_mean_relative_error():
+    assert example_code(bt_metrics.mean_relative_error)
+
+def test_relative_absolute_error():
+    assert example_code(bt_metrics.relative_absolute_error)
+    
+def test_mean_relative_absolute_error():
+    assert example_code(bt_metrics.mean_relative_absolute_error)
+
+def test_median_relative_absolute_error():
+    assert example_code(bt_metrics.median_relative_absolute_error)
+
+def test_geometric_mean_relative_absolute_error():
+    assert example_code(bt_metrics.geometric_mean_relative_absolute_error)
+
+def test_mean_bounded_relative_absolute_error():
+    assert example_code(bt_metrics.mean_bounded_relative_absolute_error)
+
+def test_unscaled_mean_bounded_relative_absolute_error():
+    assert example_code(bt_metrics.unscaled_mean_bounded_relative_absolute_error)
+
+def test_mean_directional_accuracy():
+    assert example_code(bt_metrics.mean_directional_accuracy)
+
+
