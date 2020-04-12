@@ -485,9 +485,9 @@ def root_mean_squared_scaled_error(y_true: np.ndarray, y_pred: np.ndarray):
     
     error = y_true - y_pred
     naive_forecast_error = y_true[seasonality:] - y_true[:-seasonality]
-    _mae = mean_absolute_error(y_true[seasonality:], naive_forecast_error) 
+    _mae = mean_absolute_error(y_true[seasonality:], naive_forecast_error)
     absolute_error_scaled = np.abs(error / _mae)
-    squared_absolute_error_scaled = np.square(absolute_error_mae_normalized)
+    squared_absolute_error_scaled = np.square(absolute_error_scaled)
     return np.sqrt(np.mean(
         squared_absolute_error_scaled
     ))
@@ -506,7 +506,7 @@ def integral_normalized_root_squared_error(y_true: np.ndarray, y_pred: np.ndarra
     summed_squared_average_deviation = np.sum(
         squared_average_deviation
     )
-    return normed_error / summed_suqared_average_deviation 
+    return normed_error / summed_squared_average_deviation 
 
 def root_relative_squared_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Root Relative Squared Error """

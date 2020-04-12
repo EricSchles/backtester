@@ -101,6 +101,3 @@ def test_root_mean_squared_scaled_error():
 
 def test_integral_normalized_root_squared_error():
     assert example_code(bt_metrics.integral_normalized_root_squared_error)
-
-#if __name__ == '__main__':
-#    example_code(bt_metrics.root_mean_squared_scaled_error)
