@@ -541,8 +541,6 @@ def relative_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
 
 def mean_relative_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Mean Relative Absolute Error """
-    y_true = flatten_values(y_true)
-    y_pred = flatten_values(y_pred)
     absolute_relative_error = np.abs(
         _relative_error(y_true, y_pred)
     )
@@ -550,9 +548,9 @@ def mean_relative_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
 
 def median_relative_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Median Relative Absolute Error """
-    y_true = flatten_values(y_true)
-    y_pred = flatten_values(y_pred)
-    absolute_relative_error = np.abs(_relative_error(y_true, y_pred))
+    absolute_relative_error = np.abs(
+        _relative_error(y_true, y_pred)
+    )
     return np.median(absolute_relative_error)
 
 def geometric_mean_relative_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
@@ -573,25 +571,18 @@ def geometric_mean_relative_absolute_error(y_true: pd.Series, y_pred: pd.Series)
     -------
     Geometric Mean Absolute Percentage Error
     """
-    y_true = flatten_values(y_true)
-    y_pred = flatten_values(y_pred)
-
     return mstats.gmean(np.abs(
         _relative_error(y_true, y_pred)
     ))
     
 def mean_bounded_relative_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Mean Bounded Relative Absolute Error """
-    y_true = flatten_values(y_true)
-    y_pred = flatten_values(y_pred)
     return np.mean(
         _bounded_relative_error(y_true, y_pred)
     )
 
 def unscaled_mean_bounded_relative_absolute_error(y_true: np.ndarray, y_pred: np.ndarray):
     """ Unscaled Mean Bounded Relative Absolute Error """
-    y_true = flatten_values(y_true)
-    y_pred = flatten_values(y_pred)
     _mbrae = mean_bounded_relative_absolute_error(y_true, y_pred)
     return _mbrae / (1 - _mbrae)
 
