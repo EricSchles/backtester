@@ -22,6 +22,7 @@ def flatten_values(series: pd.Series):
 
 def _relative_error(y_true: pd.Series, y_pred: pd.Series):
     """ Relative Error """
+    # try ensemble
     benchmark = seasonal_decompose(y_true).seasonal.max()
     y_true = flatten_values(y_true)
     y_pred = flatten_values(y_pred)
@@ -56,7 +57,76 @@ def _bounded_relative_error(y_true: pd.Series, y_pred: pd.Series):
         abs_error_bench = np.abs(y_true - benchmark)
     return abs_error / (abs_error + abs_error_bench)
 
-def root_mean_squared_error(y_true: np.ndarray, y_pred: np.ndarray):
+def mean_squared_error(y_true: pd.Series, y_pred: pd.Series):
+    """
+    Mean Squared Error
+    
+    Parameters
+    ----------
+    * y_true : pd.Series
+      The observations of the time series
+    * y_pred : pd.Series 
+      The values of the forecast of the time series
+
+    Note: all values are assumed to belong to the same time index
+
+    Returns
+    -------
+    Mean Squared Error
+    """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
+    return metrics.mean_squared_error(y_true, y_pred)
+
+def mean_squared_log_error(y_true: pd.Series, y_pred: pd.Series):
+    """
+    Mean Squared Logarithmic Error
+    
+    Parameters
+    ----------
+    * y_true : pd.Series
+      The observations of the time series
+    * y_pred : pd.Series 
+      The values of the forecast of the time series
+
+    Note: all values are assumed to belong to the same time index
+
+    Returns
+    -------
+    Mean Squared Logarithmic Error
+    """
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
+    y_true += 1
+    y_pred += 1
+    y_true = np.log(y_true)
+    y_pred = np.log(y_pred)
+    difference = y_pred - y_true
+    summation = np.sum(difference)
+    return summation / len(y_true)
+
+def root_mean_squared_log_error(y_true: pd.Series, y_pred: pd.Series):
+    """
+    Root Mean Squared Logathrimic Error
+    
+    Parameters
+    ----------
+    * y_true : pd.Series
+      The observations of the time series
+    * y_pred : pd.Series 
+      The values of the forecast of the time series
+
+    Note: all values are assumed to belong to the same time index
+
+    Returns
+    -------
+    Root Mean Squared Logarithmic Error
+    """
+    return np.sqrt(
+        mean_squared_log_error(y_true, y_pred)
+    )
+
+def root_mean_squared_error(y_true: pd.Series, y_pred: pd.Series):
     """
     Root Mean Squared Error
 
@@ -391,13 +461,12 @@ def mean_arctangent_absolute_percentage_error(y_true: np.ndarray, y_pred: np.nda
     """
     Mean Arctangent Absolute Percentage Error
 
-    Note: result is NOT multiplied by 100
     """
     y_true = flatten_values(y_true)
     y_pred = flatten_values(y_pred)
     relative_error = (y_true - y_pred) / y_true
     abs_relative_error = np.abs(relative_error)
-    return np.mean(np.arctan(
+    return 100 * np.mean(np.arctan(
         abs_relative_error
     ))
 
