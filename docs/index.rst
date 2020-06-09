@@ -10,6 +10,10 @@ Welcome to Backtester's documentation!
    :maxdepth: 2
 
    introduction
+   project-setup
+   metrics
+   hypothesis-testing
+   visualizations
    api_docs/backtester.metrics
    api_docs/backtester.backtest
 
