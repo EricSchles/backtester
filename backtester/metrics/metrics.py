@@ -7,9 +7,7 @@ from statsmodels.tsa.api import (
 from statsmodels.stats import diagnostic
 from statsmodels.tsa.seasonal import seasonal_decompose
 from collections import namedtuple
-from sklearn.metrics import mean_squared_error
 import numpy as np
-from sklearn import metrics
 from scipy.stats import mstats
 from scipy.stats import iqr
 from empiricaldist import Cdf as CDF
@@ -20,6 +18,12 @@ def flatten_values(series: pd.Series):
         return series.values.ravel()
     return series
 
+def relative_error(y_true: pd.Series, y_pred: pd.Series):
+    y_true = flatten_values(y_true)
+    y_pred = flatten_values(y_pred)
+    difference = y_true - y_pred
+    return np.abs(difference/y_true)
+    
 def _relative_error(y_true: pd.Series, y_pred: pd.Series):
     """ Relative Error """
     # try ensemble
@@ -76,7 +80,9 @@ def mean_squared_error(y_true: pd.Series, y_pred: pd.Series):
     """
     y_true = flatten_values(y_true)
     y_pred = flatten_values(y_pred)
-    return metrics.mean_squared_error(y_true, y_pred)
+    difference = y_true - y_pred
+    squared_difference = np.power(difference)
+    return np.mean(squared_difference)
 
 def mean_squared_log_error(y_true: pd.Series, y_pred: pd.Series):
     """
@@ -146,7 +152,7 @@ def root_mean_squared_error(y_true: pd.Series, y_pred: pd.Series):
     y_true = flatten_values(y_true)
     y_pred = flatten_values(y_pred)
     return np.sqrt(
-        metrics.mean_squared_error(y_true, y_pred)
+        mean_squared_error(y_true, y_pred)
     )
 
 def normalized_root_mean_squared_error(y_true: np.ndarray, y_pred: np.ndarray):
@@ -464,10 +470,9 @@ def mean_arctangent_absolute_percentage_error(y_true: np.ndarray, y_pred: np.nda
     """
     y_true = flatten_values(y_true)
     y_pred = flatten_values(y_pred)
-    relative_error = (y_true - y_pred) / y_true
-    abs_relative_error = np.abs(relative_error)
+    _relative_error = relative_error(y_true, y_pred)
     return 100 * np.mean(np.arctan(
-        abs_relative_error
+        _relative_error
     ))
 
 def mean_absolute_scaled_error(y_true: np.ndarray, y_pred: np.ndarray):
